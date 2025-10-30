@@ -129,7 +129,7 @@ class vLLMRollout(BaseRollout):
         )
 
         # Offload vllm model to reduce peak memory usage
-        self.inference_engine.sleep(level=1)
+        # self.inference_engine.sleep(level=1)
 
         kwargs = dict(
             n=1,

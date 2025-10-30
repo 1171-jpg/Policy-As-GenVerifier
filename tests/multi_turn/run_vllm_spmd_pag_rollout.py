@@ -23,6 +23,8 @@ Key features:
 """
 
 import os
+os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
+os.environ["TORCH_USE_CUDA_DSA"] = "1"
 import numpy as np
 from types import SimpleNamespace
 from transformers import AutoTokenizer, AutoConfig
@@ -124,10 +126,10 @@ def create_rollout_config(tensor_model_parallel_size: int, max_prompt_length: in
         'tensor_model_parallel_size': tensor_model_parallel_size,
         'prompt_length': max_prompt_length,
         'response_length': response_length,
-        'dtype': 'bfloat16',
+        'dtype': 'float16',
         'enforce_eager': True,
         'gpu_memory_utilization': 0.8,
-        'load_format': 'dummy_dtensor',
+        'load_format': 'auto',
         'disable_log_stats': True,
         'enable_chunked_prefill': False,
         'free_cache_engine': False,
@@ -137,6 +139,8 @@ def create_rollout_config(tensor_model_parallel_size: int, max_prompt_length: in
         'max_num_batched_tokens': 8192 * 4,
         'max_model_len': 1024 * 4,
         'num_turns': 2,
+        'attention_backend': 'SDPA',      
+        'engine': 'V1',    
         "val_kwargs": {
             "num_turns": 2,
         }
@@ -164,7 +168,7 @@ def evaluate_outputs(outputs, tokenizer, preencode_prompts, answers, rollout_con
             valid_response = outputs.batch['input_ids'][i]
             
             print(f"Cases {i+1} : {tokenizer.decode(valid_response, skip_special_tokens=True)}")
-            breakpoint()
+            # breakpoint()
     
     # Reward evaluation
     config = SimpleNamespace()
@@ -249,7 +253,7 @@ def main():
     )
     
     print("\nTest completed!")
-    torch.distributed.destroy_process_group()
+    # torch.distributed.destroy_process_group()
 
 
 if __name__ == "__main__":
